@@ -633,6 +633,7 @@ class Agent(Generic[Context]):
 			logger.debug(f'Using {self.tool_calling_method} for {self.chat_model_library}')
 			try:
 				output = self.llm.invoke(input_messages)
+				response = {'raw': output, 'parsed': None}
 			except Exception as e:
 				logger.error(f'Failed to invoke model: {str(e)}')
 				raise LLMException(401, 'LLM API call failed') from e
@@ -641,6 +642,7 @@ class Agent(Generic[Context]):
 			try:
 				parsed_json = extract_json_from_model_output(output.content)
 				parsed = self.AgentOutput(**parsed_json)
+				response['parsed'] = parsed
 			except (ValueError, ValidationError) as e:
 				logger.warning(f'Failed to parse model output: {output} {str(e)}')
 				raise ValueError('Could not parse response.')
@@ -767,7 +769,7 @@ class Agent(Generic[Context]):
 		signal_handler.register()
 
 		# Start non-blocking LLM connection verification
-		assert await self.llm._verified_api_keys, 'Failed to verify LLM API keys'
+		assert self.llm._verified_api_keys, 'Failed to verify LLM API keys'
 
 		try:
 			self._log_agent_run()

@@ -56,8 +56,8 @@ class BrowserContextConfig(BaseModel):
 	    cookies_file: None
 	        Path to cookies file for persistence
 
-		disable_security: True
-			Disable browser security features
+		disable_security: False
+			Disable browser security features (dangerous, but cross-origin iframe support requires it)
 
 	    minimum_wait_page_load_time: 0.5
 	        Minimum time to wait before getting page state for LLM input
@@ -106,6 +106,10 @@ class BrowserContextConfig(BaseModel):
 	    include_dynamic_attributes: bool = True
 	        Include dynamic attributes in the CSS selector. If you want to reuse the css_selectors, it might be better to set this to False.
 
+		  http_credentials: None
+	  Dictionary with HTTP basic authentication credentials for corporate intranets (only supports one set of credentials for all URLs at the moment), e.g.
+	  {"username": "bill", "password": "pa55w0rd"}
+
 	    is_mobile: None
 	        Whether the meta viewport tag is taken into account and touch events are enabled.
 
@@ -137,7 +141,7 @@ class BrowserContextConfig(BaseModel):
 	maximum_wait_page_load_time: float = 5
 	wait_between_actions: float = 0.5
 
-	disable_security: bool = True
+	disable_security: bool = False  # disable_security=True is dangerous as any malicious URL visited could embed an iframe for the user's bank, and use their cookies to steal money
 
 	browser_window_size: BrowserContextWindowSize = Field(default_factory=lambda: {'width': 1280, 'height': 1100})
 	no_viewport: Optional[bool] = None
@@ -155,6 +159,7 @@ class BrowserContextConfig(BaseModel):
 	viewport_expansion: int = 500
 	allowed_domains: list[str] | None = None
 	include_dynamic_attributes: bool = True
+	http_credentials: dict[str, str] | None = None
 
 	keep_alive: bool = Field(default=False, alias='_force_keep_context_alive')  # used to be called _force_keep_context_alive
 	is_mobile: bool | None = None
@@ -446,6 +451,7 @@ class BrowserContext:
 				record_video_size=self.config.browser_window_size,
 				record_har_path=self.config.save_har_path,
 				locale=self.config.locale,
+				http_credentials=self.config.http_credentials,
 				is_mobile=self.config.is_mobile,
 				has_touch=self.config.has_touch,
 				geolocation=self.config.geolocation,
@@ -917,7 +923,7 @@ class BrowserContext:
 			# Get all cross-origin iframes within the page and open them in new tabs
 			# mark the titles of the new tabs so the LLM knows to check them for additional content
 			# unfortunately too buggy for now, too many sites use invisible cross-origin iframes for ads, tracking, youtube videos, social media, etc.
-			# and it distracts the bot by openeing a lot of new tabs
+			# and it distracts the bot by opening a lot of new tabs
 			# iframe_urls = await dom_service.get_cross_origin_iframes()
 			# for url in iframe_urls:
 			# 	if url in [tab.url for tab in tabs_info]:
@@ -1407,7 +1413,7 @@ class BrowserContext:
 			try:
 				tab_info = TabInfo(page_id=page_id, url=page.url, title=await asyncio.wait_for(page.title(), timeout=1))
 			except asyncio.TimeoutError:
-				# page.title() can hang forever on tabs that are crashed/dissapeared/about:blank
+				# page.title() can hang forever on tabs that are crashed/disappeared/about:blank
 				# we dont want to try automating those tabs because they will hang the whole script
 				logger.debug('⚠  Failed to get tab info for tab #%s: %s (ignoring)', page_id, page.url)
 				tab_info = TabInfo(page_id=page_id, url='about:blank', title='ignore this tab and do not use it')
