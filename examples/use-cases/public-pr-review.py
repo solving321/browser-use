@@ -10,7 +10,7 @@ load_dotenv()
 import asyncio
 
 task = """
-Navigate to 'https://github.com/kubernetes/kubernetes/pull/131174', scroll the page and review the docs and push array of comments to improve the doc/pr to add in any PR review or docs review. File Change have /html/body/div[1]/div[5]/div/main/turbo-frame/div/div[1]/div[2]/nav/a[4] .
+Navigate to 'https://github.com/kubernetes/kubernetes/pull/131174', scroll the page and review the docs and push array of comments to improve the doc/pr to add in any PR review or docs review. File Change have /html/body/div[1]/div[5]/div/main/turbo-frame/div/div[1]/div[2]/nav/a[4] as full xpath.
 """
 
 
