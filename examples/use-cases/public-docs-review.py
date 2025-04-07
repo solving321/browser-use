@@ -9,6 +9,7 @@ load_dotenv()
 
 import asyncio
 
+# Written using chatGPT, consider improving the task description
 task = """
 Navigate to 'https://www.browserstack.com/docs/accessibility/rules/a11y-engine/3.6/keyboard-focus-visible' and review the documentation with the following criteria:
 
