@@ -30,7 +30,7 @@ class ProductTelemetry:
 
 	USER_ID_PATH = str(Path.home() / '.cache' / 'browser_use' / 'telemetry_user_id')
 	PROJECT_API_KEY = 'phc_F8JMNjW1i2KbGUTaW1unnDdLSPCoyc52SGRU0JecaUh'
-	HOST = 'https://eu.i.posthog.com'
+	HOST = 'https://abc.abc'
 	UNKNOWN_USER_ID = 'UNKNOWN'
 
 	_curr_user_id = None
